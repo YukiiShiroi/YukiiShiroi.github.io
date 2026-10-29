@@ -1,0 +1,52 @@
+<!doctype html>
+<!-- Camino — © 2026 YukiiShiroi (github.com/YukiiShiroi). All rights reserved. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Camino · Learn Spanish</title>
+<meta name="description" content="Learn Spanish from zero: sounds, 450 everyday words, beginner grammar and short readings, with spaced repetition and a copybook.">
+<meta name="theme-color" content="#f5efe4">
+<meta name="author" content="YukiiShiroi">
+<meta name="copyright" content="© 2026 YukiiShiroi. All rights reserved.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Camino">
+<!-- The page may only load its own files and only send data to GitHub's API (for sync). Left off for the
+     self-test (?selftest) and when the page is opened as a local file. -->
+<script>if (!/[?&]selftest\b/.test(location.search) && location.protocol !== 'file:'){ const m = document.createElement('meta'); m.httpEquiv = 'Content-Security-Policy';
+  m.content = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; media-src 'self'; connect-src 'self' https://api.github.com https://gist.githubusercontent.com; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'";
+  document.head.appendChild(m); }</script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header><div class="bar">
+  <button class="logo" data-act="go" data-view="home" aria-label="Camino home"><span class="mark">ñ</span><b>Camino</b></button>
+  <nav aria-label="Sections">
+    <button data-view="home" data-act="go"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span>Home</span></button>
+    <button data-view="words" data-act="go"><svg viewBox="0 0 24 24"><path d="M4 5h11a3 3 0 0 1 3 3v11H7a3 3 0 0 1-3-3zM18 8h2v13"/></svg><span>Words</span></button>
+    <button data-view="sounds" data-act="go"><svg viewBox="0 0 24 24"><path d="M4 10v4h4l5 4V6L8 10zM16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></svg><span>Sounds</span></button>
+    <button data-view="grammar" data-act="go"><svg viewBox="0 0 24 24"><path d="M5 4h14v16H5zM9 9h6M9 13h6M9 17h3"/></svg><span>Grammar</span></button>
+    <button data-view="read" data-act="go"><svg viewBox="0 0 24 24"><path d="M3 6c3-1 6-1 9 1 3-2 6-2 9-1v13c-3-1-6-1-9 1-3-2-6-2-9-1zM12 7v13"/></svg><span>Read</span></button>
+    <button data-view="copybook" data-act="go"><svg viewBox="0 0 24 24"><path d="M4 20l4-1L19 8l-3-3L5 16zM14 7l3 3"/></svg><span>Copybook</span></button>
+    <button data-view="stats" data-act="go"><svg viewBox="0 0 24 24"><path d="M5 20V11M12 20V5M19 20v-6"/></svg><span>Stats</span></button>
+  </nav>
+  <button class="icon-btn" id="syncBtn" data-act="sync-now" hidden aria-label="Sync now"></button>
+  <button class="icon-btn" data-act="go" data-view="settings" aria-label="Settings"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></button>
+</div></header>
+<main id="app"></main>
+<div id="modal"></div>
+<div id="toast" role="status"></div>
+<div id="live" class="sr" aria-live="polite"></div>
+<script src="data/words.js"></script>
+<script src="data/sounds.js"></script>
+<script src="data/grammar.js"></script>
+<script src="data/reader.js"></script>
+<script src="data/forms.js"></script>
+<script src="core.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
