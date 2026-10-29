@@ -1,0 +1,14 @@
+Kanamichi · かな道
+Copyright © 2026 YukiiShiroi (https://github.com/YukiiShiroi). All rights reserved.
+
+Kanamichi's source code, learning content (lessons, word lists, grammar explanations, reading texts, memory
+aids, quizzes), design, icons and audio recordings belong to YukiiShiroi. This repository is public only so the
+app can be served from GitHub Pages; that does not grant a licence. No part of it may be copied, modified,
+redistributed, published, or used to build other apps or services without written permission from YukiiShiroi.
+
+Third-party components, each under its own licence:
+- Fonts in fonts/ (Klee One, Shippori Mincho, Zen Kaku Gothic New, Atkinson Hyperlegible, JetBrains Mono):
+  SIL Open Font License 1.1 — see fonts/licenses/.
+- Voice of the audio recordings: VOICEVOX:冥鳴ひまり (https://voicevox.hiroshiba.jp/), used under the voice's
+  terms of use, which require this credit.
+- iOS app runtime: Capacitor (https://capacitorjs.com/), MIT License — installed from npm, not stored here.
