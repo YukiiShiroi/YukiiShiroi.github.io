@@ -900,7 +900,7 @@ nav button.pv span::after{content:"·"; margin-left:3px; color:var(--gold); font
 .ptile.off{opacity:.55}
 .pt-acts{margin-left:auto; display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end}
 .vhead-btns{display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end}
-@media (max-width:640px){ .pt-acts{width:100%; margin-left:0} .pt-acts .btn{flex:1} .ptile.wide{flex-wrap:wrap} .vhead-btns{justify-content:stretch} .vhead-btns .btn{flex:1} .flash .study-top .btn{padding:6px 8px; font-size:12px} }
+@media (max-width:640px){ .pt-acts{width:100%; margin-left:0} .pt-acts .btn{flex:1} .ptile.wide{flex-wrap:wrap} .vhead-btns{justify-content:stretch} .vhead-btns .btn{flex:1; padding-left:12px; padding-right:12px; white-space:nowrap} .flash .study-top .btn{padding:6px 8px; font-size:12px} }
 .mastery{display:flex; flex-direction:column; gap:6px; margin:0 0 12px; padding:10px 12px; border-radius:12px; background:var(--paper); border:1px solid var(--line); font-size:12.5px; color:var(--ink-2)}
 .tipsheet h2{margin:4px 0 8px}
 .tipsheet p{line-height:1.55; color:var(--ink-2)}
@@ -1230,6 +1230,7 @@ nav button{padding:8px 11px}
 .cold .face.solo{min-height:250px}
 .cold .front-kana.pop{animation:fade .25s}
 .cl-under{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:12px; min-height:34px}
+.cl-under .btn{flex:none; white-space:nowrap}
 .cl-last{min-width:0}
 .cl-last .chipt{white-space:normal; font-size:12.5px}
 .cl-last .muted{font-size:13px}
@@ -1237,7 +1238,12 @@ nav button{padding:8px 11px}
 .cl-slot{aspect-ratio:1/1; display:grid; place-items:center; border-radius:8px; border:1px dashed var(--line); font-style:normal; font-family:var(--kana-font); font-size:17px; line-height:1}
 .cl-slot.cur{border:2px solid var(--ai)}
 .cl-slot.s-learn, .cl-slot.s-young, .cl-slot.s-master{border-style:solid}
+.cl-sheet.dots{grid-template-columns:repeat(auto-fill,minmax(16px,1fr)); gap:5px}
+.cl-sheet.dots .cl-slot{border-radius:5px}
+.cl-sheet.dots .cl-slot.s-learn{background:var(--shu)} .cl-sheet.dots .cl-slot.s-young{background:var(--gold)} .cl-sheet.dots .cl-slot.s-master{background:var(--matcha)}
 .cl-opts{display:flex; flex-direction:column; align-items:center; gap:10px; margin:0 0 22px}
+.cl-opts .seg{justify-content:center}
+@media (max-width:640px){ .cl-opts .seg button{padding:7px 10px; font-size:14.5px} }
 .cl-done .panel, .cl-intro .grid{text-align:left}
 .cl-done > .panel{margin-bottom:22px}
 .cl-done .sec-h{display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px}
@@ -2203,7 +2209,7 @@ function cleanDB(d){
   for (const k of ['days', 'mist', 'conf', 'newDay', 'mnT', 'copyCut']) if (k in out) out[k] = numsOf(out[k]);
   if ('gram' in out) out.gram = Object.fromEntries(Object.entries(objOf(out.gram)).map(([id, g]) => [id, {...(g.p === true ? {p:true} : {}), ...pickNums(g, ['best', 'ivl', 'due', 'at'])}]));
   if ('read' in out) out.read = Object.fromEntries(Object.entries(objOf(out.read)).map(([id, r]) => [id, pickNums(r, ['n', 'best', 'at'])]));
-  if ('cold' in out) out.cold = Object.fromEntries(Object.entries(objOf(out.cold)).filter(([k]) => /^[hk]\+?$/.test(k))
+  if ('cold' in out) out.cold = Object.fromEntries(Object.entries(objOf(out.cold)).filter(([k]) => /^([hk]\+?|(w|v|kj|kw)(20|50)?)$/.test(k))
     .map(([k, r]) => [k, pickNums(r, ['s', 't', 'secs', 'at', 'bs', 'bt', 'bsecs'])]).filter(([, r]) => r.t > 0 && isNum(r.s) && isNum(r.secs)));
   if ('ret' in out) out.ret = Object.fromEntries(Object.entries(objOf(out.ret)).filter(([, r]) => isNum(r.l)).map(([id, r]) => [id, {l:r.l, c:numsOf(r.c)}]));
   if ('guides' in out) out.guides = Object.fromEntries(Object.entries(objOf(out.guides, v => v === true)));
@@ -2829,14 +2835,15 @@ function homeHTML(){
   const drillSets = drillPool().length, guidesDone = GUIDES.filter(g => DB.guides[g.id]).length;
   const vocabLearned = VOCAB_IDS.filter(id => st(id).s === 'review').length;
   const tile = (glyph, title, line, attrs, disabled) => `<button class="ptile" ${attrs} ${disabled ? 'disabled' : ''}><span class="pt-ico jp">${glyph}</span><span class="pt-t"><b>${title}</b><span>${line}</span></span></button>`;
-  const learnedN = practicePool('mix').length, coldN = clScope().ids.length;
+  const learnedN = practicePool('mix').length, coldDecks = clDecks().map(([, l]) => l.toLowerCase());
+  const coldLine = coldDecks.length > 1 ? `${coldDecks.slice(0, -1).join(', ')} and ${coldDecks.at(-1)}` : coldDecks[0] || '';
   const practice = `<section class="practice">
     <div class="ptile wide${learnedN ? '' : ' off'}"><span class="pt-ico jp">復</span><span class="pt-t"><b>Practise learned cards</b><span>${learnedN ? `${learnedN} learned cards · any time · your schedule isn’t affected` : 'Unlocks after your first lesson'}</span></span>
       ${learnedN ? `<span class="pt-acts"><button class="btn sm" data-act="fc-start" data-scope="mix">⟲ Flashcards</button><button class="btn sm primary" data-act="practice">Quiz me →</button></span>` : ''}</div>
     ${tile('語', 'Vocabulary', `${vocabLearned} learned · ${VOCAB_IDS.length} words`, 'data-act="go" data-view="vocab"')}
     ${tile('似', 'Lookalike drill', drillSets ? `${drillSets} confusable set${drillSets === 1 ? '' : 's'} ready` : 'Unlocks with similar kana or kanji', 'data-act="drill"', !drillSets)}
     ${tile('読', 'Reading guides', `${guidesDone}/${GUIDES.length} complete`, 'data-act="go" data-view="guides"')}
-    ${tile('あ', 'Cold Learn', coldN ? `${coldN} ${SCRIPT_NAME[clScope().sc].toLowerCase()} you know · shuffled · no hints` : 'Unlocks after your first lesson', 'data-act="cold"', !coldN)}
+    ${tile('あ', 'Cold Learn', coldLine ? `${coldLine[0].toUpperCase() + coldLine.slice(1)} you know · shuffled · no hints` : 'Unlocks after your first lesson', 'data-act="cold"', !coldLine)}
   </section>`;
 
   // Sidebar: streak, progress, coming up, kana of the day, trouble spots
@@ -4120,6 +4127,7 @@ function flashHTML(){
 }
 // A small "Flashcards" button for a set of cards (disabled until some are learned)
 const fcButtonHTML = (attrs, n, cls = 'btn sm') => `<button class="${cls}" ${attrs} ${n ? '' : 'disabled data-tip="Learn a few of these first"'}>⟲ Flashcards${n ? ` <small>${n}</small>` : ''}</button>`;
+const coldButtonHTML = (attrs, n, cls = 'btn sm') => `<button class="${cls}" data-act="cold" ${attrs} ${n ? 'data-tip="What you know here, shuffled, with no hints"' : 'disabled data-tip="Learn a few of these first"'}>❄ Cold Learn</button>`;
 
 /* ---------- kanji tab ---------- */
 let kanjiFilter = 'kanji';
@@ -4168,7 +4176,7 @@ function kanjiHTML(){
     : '<div class="empty">Kanji words unlock once you’ve learned (and reviewed) their kanji.</div>';
   return `${previewBannerHTML('Kanji lessons')}<div class="page-head vhead"><div><p class="eyebrow">漢字 · Kanji</p><h1>Kanji</h1>
       <p class="sub">Characters that carry meaning. Learn each kanji’s meaning first; words written with it unlock right after and teach you how to read it.</p></div>
-    <div class="vhead-act"><div class="vhead-btns">${open ? fcButtonHTML('data-act="fc-start" data-scope="kj"', practicePool('kj').length, 'btn big') : ''}${learnBtn}</div><span class="muted">${open ? `${unseenKanji().length} kanji · ${wordsReady.length} words waiting · ${newCounter().k + newCounter().kw} learned today` : 'Tap any kanji to preview it'}</span></div></div>
+    <div class="vhead-act"><div class="vhead-btns">${open ? fcButtonHTML('data-act="fc-start" data-scope="kj"', practicePool('kj').length, 'btn big') + coldButtonHTML(`data-deck="${clDeckPool('kj').length ? 'kj' : 'kw'}"`, practicePool('kj').length, 'btn big') : ''}${learnBtn}</div><span class="muted">${open ? `${unseenKanji().length} kanji · ${wordsReady.length} words waiting · ${newCounter().k + newCounter().kw} learned today` : 'Tap any kanji to preview it'}</span></div></div>
   <section class="panel vsum">
     <div class="vsum-n">${[['Kanji', ids.length, ''], ['Learning', counts.learn, 's-learn'], ['Young', counts.young, 's-young'], ['Mastered', counts.master, 's-master'], ['Words', wordsKnown.length, '']]
       .map(([l, n, c]) => `<div class="vk ${c}"><b>${n}</b><span>${l}</span></div>`).join('')}</div>
@@ -4258,7 +4266,7 @@ function vocabHTML(){
     : `<button class="btn big" disabled data-tip="${unseenVocab().length ? '' : 'Every word is learned — new ones unlock as you learn kana'}">Nothing new to learn</button>`;
   return `<div class="page-head vhead"><div><p class="eyebrow">単語 · Vocabulary</p><h1>Vocabulary</h1>
       <p class="sub">Words unlock as you learn their kana. Each one is taught in a short lesson, then reviewed on schedule by its <b>meaning</b>.</p></div>
-    <div class="vhead-act"><div class="vhead-btns">${fcButtonHTML('data-act="fc-start" data-scope="v"', practicePool('v').length, 'btn big')}${learnBtn}</div><span class="muted">${unseenVocab().length} waiting · ${newCounter().v} learned today</span></div></div>
+    <div class="vhead-act"><div class="vhead-btns">${fcButtonHTML('data-act="fc-start" data-scope="v"', practicePool('v').length, 'btn big')}${coldButtonHTML('data-deck="v"', practicePool('v').length, 'btn big')}${learnBtn}</div><span class="muted">${unseenVocab().length} waiting · ${newCounter().v} learned today</span></div></div>
   <section class="panel vsum">
     <div class="vsum-n">${[['Words', total, ''], ['New', counts.new, 's-new'], ['Learning', counts.learn, 's-learn'], ['Young', counts.young, 's-young'], ['Mastered', counts.master, 's-master']]
       .map(([l, n, c]) => `<div class="vk ${c}"><b>${n}</b><span>${l}</span></div>`).join('')}</div>
@@ -4899,21 +4907,34 @@ function drillTypo(){
   D.i++; D.picked = null; render();
 }
 
-/* ---------- Cold Learn: every kana you've learned, one at a time in random order, with no hints ---------- */
+/* ---------- Cold Learn: what you've learned in one deck, one at a time in random order, with no hints ---------- */
 // Your review schedule is never touched. Mix-ups still feed the lookalike drill, and misses count in Stats.
-let CL = null, clScript = 'h', clAll = false;
-const clKey = (sc, all) => sc + (all ? '+' : '');
+// A kana test covers the whole set you know; a word, vocab or kanji test can be a random sample of the deck.
+let CL = null, clDeck = 'kana', clScript = 'h', clAll = false, clSize = 20;
+const CL_DECKS = [['kana', 'Kana'], ['w', 'Words'], ['v', 'Vocab'], ['kj', 'Kanji'], ['kw', 'Kanji words']];
+const CL_KIND = {w:'word', v:'vocab', kj:'kanji', kw:'kword'}, CL_SIZES = [20, 50];
+const CL_NOUN = {w:'words', v:'vocab words', kj:'kanji', kw:'kanji words'}, CL_ONE = {kana:'kana', w:'word', v:'word', kj:'kanji', kw:'word'};
 const clPool = (sc, all) => KANA_IDS.filter(id => CARDS[id].script === sc && (all || CARDS[id].kind === 'basic') && st(id).s !== 'new' && cardOn(id));
-// The test on offer: the basic kana you've learned, or everything you've learned in that alphabet
+const clDeckPool = d => d === 'kana' ? [...clPool('h', true), ...clPool('k', true)]
+  : Object.keys(DB.cards).filter(id => CARDS[id]?.kind === CL_KIND[d] && DB.cards[id].s !== 'new' && cardOn(id));
+const clDecks = () => CL_DECKS.filter(([d]) => clDeckPool(d).length);
+// The test on offer. Kana: the basic ones you've learned, or everything in that alphabet. Other decks: all of it,
+// or a random 20 or 50 (each size keeps its own results, so runs compare like with like).
 function clScope(){
+  const deck = clDeckPool(clDeck).length ? clDeck : 'kana';
+  if (deck !== 'kana'){
+    const pool = clDeckPool(deck), n = clSize && pool.length > clSize ? clSize : pool.length;
+    return {deck, pool, n, key:deck + (n < pool.length ? n : '')};
+  }
   const sc = clPool(clScript, true).length ? clScript : 'h';
   const basic = clPool(sc, false), every = clPool(sc, true);
-  const all = !basic.length || (clAll && every.length > basic.length);
-  return {sc, all, ids:all ? every : basic, basicN:basic.length, allN:every.length};
+  const all = !basic.length || (clAll && every.length > basic.length), pool = all ? every : basic;
+  return {deck, sc, all, pool, n:pool.length, basicN:basic.length, allN:every.length, key:sc + (all ? '+' : '')};
 }
+const clName = x => x.deck === 'kana' ? SCRIPT_NAME[x.sc] : CL_DECKS.find(([d]) => d === x.deck)[1];
 const clOk = r => r.ok || r.kind === 'typo';
 const clCls = r => !clOk(r) ? 's-learn' : r.slow ? 's-young' : 's-master';
-// Last run and best run per test. A bigger test (you've learned more kana since) replaces the best;
+// Last run and best run per test. A bigger test (you've learned more since) replaces the best;
 // at the same size, more right wins, then faster.
 const clBetter = (a, b) => !b || (a.t !== b.t ? a.t > b.t : a.s !== b.s ? a.s > b.s : a.secs < b.secs);
 const clBest = r => r && isNum(r.bt) ? {s:r.bs, t:r.bt, secs:r.bsecs} : null;
@@ -4921,57 +4942,62 @@ function clRecord(prev, run){
   const best = clBetter(run, clBest(prev)) ? run : clBest(prev);
   return {s:run.s, t:run.t, secs:run.secs, at:run.at, bs:best.s, bt:best.t, bsecs:best.secs};
 }
-function openCold(sc){
+function openCold(deck, sc){
+  if (deck) clDeck = deck;
   if (sc) clScript = sc;
-  CL = {phase:'intro', from:view === 'chart' ? 'chart' : 'home'};
+  CL = {phase:'intro', from:['chart', 'vocab', 'kanji'].includes(view) ? view : 'home'};
   S = null; D = null; L = null; RQ = null;
   view = 'cold'; render(); window.scrollTo(0, 0);
 }
 function startCold(){
-  const {sc, all, ids} = clScope();
-  if (!ids.length) return;
-  const key = clKey(sc, all);
-  CL = {phase:'test', from:CL?.from || 'home', sc, all, key, ids:shuffle(ids), i:0, res:[], prev:DB.cold[key] || null, shownAt:performance.now(), firstKey:null};
+  const s = clScope();
+  if (!s.n) return;
+  CL = {phase:'test', from:CL?.from || 'home', deck:s.deck, sc:s.sc, all:s.all, key:s.key, full:s.n === s.pool.length, ids:shuffle([...s.pool]).slice(0, s.n),
+    i:0, res:[], prev:DB.cold[s.key] || null, shownAt:performance.now(), firstKey:null};
   view = 'cold'; render(); window.scrollTo(0, 0);
   document.getElementById('cltyped')?.focus();
 }
 function clQuit(){ const back = CL?.from || 'home'; CL = null; view = back; render(); window.scrollTo(0, 0); }
 const clSecs = () => sum(CL.res.map(r => r.ms)) / 1000 + (CL.phase === 'test' ? (performance.now() - CL.shownAt) / 1000 : 0);
 const clScoreHTML = () => { const ok = CL.res.filter(clOk).length; return `<span class="c-rev">✓ ${ok}</span>${CL.res.length - ok ? ` <span class="c-learn">✗ ${CL.res.length - ok}</span>` : ''}`; };
+const clTipHTML = r => clOk(r) ? `${fmtSecs(r.rt)}${r.slow ? ' · slow' : ''}${r.kind === 'typo' ? ' · forgiven' : ''}` : `you typed ${r.text ? esc(r.text) : 'nothing'}`;
+// The answer sheet: kana fill their boxes; words are too long for that, so they show as coloured dots
 function clSlotHTML(i){
   const r = CL.res[i];
   if (!r) return `<i class="cl-slot${i === CL.i ? ' cur' : ''}"></i>`;
-  const c = CARDS[r.id];
-  return `<i class="cl-slot ${clCls(r)}" data-tip="${c.romaji}${r.ok ? ` · ${fmtSecs(r.rt)}` : ` · you typed ${r.text ? esc(r.text) : 'nothing'}`}">${c.kana}</i>`;
+  const c = CARDS[r.id], kana = CL.deck === 'kana';
+  return `<i class="cl-slot ${clCls(r)}" data-tip="${kana ? '' : c.kana + ' · '}${retAnswerOf(c)} · ${clTipHTML(r)}">${kana ? c.kana : ''}</i>`;
 }
+const clFrontHTML = (c, pop) => isWordish(c)
+  ? `<div id="clKana" class="front-kana kana${pop ? ' pop' : ''}" style="${wordSize(c, 96)};flex-direction:column" lang="ja">${c.kana}${c.kind === 'vocab' ? kanjiLine(c) : ''}</div>`
+  : `<div id="clKana" class="front-kana kana${c.kana.length > 1 ? ' combo' : ''}${pop ? ' pop' : ''}" lang="ja">${c.kana}</div>`;
 function clLastHTML(){
   const r = CL.res[CL.res.length - 1];
-  if (!r) return '<span class="muted">Type what each kana says.</span>';
-  const c = CARDS[r.id];
-  return r.ok ? `<span class="chipt${r.slow ? ' slow' : ''}">✓ ${c.kana} ${c.romaji}${r.slow ? ` · ${fmtSecs(r.rt)}, a bit slow` : ''}</span>`
-    : `<span class="chipt no">✗ ${c.kana} is ${c.romaji}${r.text ? ` — you typed “${esc(r.text)}”` : ''}</span>`;
+  if (!r) return `<span class="muted">${CL.deck === 'kana' ? 'Type what each kana says.' : asksMeaning(CARDS[CL.ids[0]]) ? 'Type what each one means.' : 'Type how each one reads.'}</span>`;
+  const c = CARDS[r.id], a = retAnswerOf(c);
+  return r.ok ? `<span class="chipt${r.slow ? ' slow' : ''}">✓ ${c.kana} · ${a}${r.slow ? ` · ${fmtSecs(r.rt)}, a bit slow` : ''}</span>`
+    : `<span class="chipt no">✗ ${c.kana} is ${a}${r.text ? ` — you typed “${esc(r.text)}”` : ''}</span>`;
 }
 function clSubmit(raw, skip){
   if (!CL || CL.phase !== 'test') return;
   const id = CL.ids[CL.i], c = CARDS[id], now = performance.now(), text = answerText(c, raw);
-  if (!text && !skip && now - CL.shownAt < 400) return;      // a double Enter mustn't skip the next kana
+  if (!text && !skip && now - CL.shownAt < 400) return;      // a double Enter mustn't skip the next one
   const ok = isCorrect(c, text), rt = ((CL.firstKey ?? now) - CL.shownAt) / 1000;
   CL.res.push({id, text, ok, kind:'know', rt, ms:Math.min(60000, now - CL.shownAt), slow:ok && +DB.settings.speed > 0 && rt > speedTarget(c), hint:!ok && answerTypo(c, text)});
   if (!ok){
     logConfusionFromTyping(id, text); recordMistake('cold', 'know'); save();
-    if (DB.settings.autoplay !== false) speak(c.kana);
+    if (DB.settings.autoplay !== false) speak(c.kind === 'kword' ? c.reading : c.kana);
   }
   CL.i++; CL.shownAt = performance.now(); CL.firstKey = null;
   if (CL.i >= CL.ids.length) return clFinish();
-  announce(`${ok ? 'Right' : `No, ${c.romaji}`}. Next: ${CARDS[CL.ids[CL.i]].kana}`);
+  announce(`${ok ? 'Right' : `No, ${retAnswerOf(c)}`}. Next: ${CARDS[CL.ids[CL.i]].kana}`);
   clUpdate();
 }
-// Between kana only the parts that change are redrawn, so the answer box (and a phone's keyboard) stays put
+// Between questions only the parts that change are redrawn, so the answer box (and a phone's keyboard) stays put
 function clUpdate(){
-  const $ = id => document.getElementById(id), k = $('clKana'), c = CARDS[CL.ids[CL.i]];
+  const $ = id => document.getElementById(id), k = $('clKana');
   if (!k) return render();
-  k.textContent = c.kana; k.classList.toggle('combo', c.kana.length > 1);
-  k.classList.remove('pop'); void k.offsetWidth; k.classList.add('pop');
+  k.outerHTML = clFrontHTML(CARDS[CL.ids[CL.i]], true);
   $('clCount').textContent = CL.i + 1;
   $('clBar').style.width = CL.i / CL.ids.length * 100 + '%';
   $('clScore').innerHTML = clScoreHTML();
@@ -4990,7 +5016,7 @@ function clSave(){
   DB.cold[CL.key] = clRecord(CL.prev, {s:CL.res.filter(clOk).length, t:CL.ids.length, secs:CL.secs, at:CL.at});
   save();
 }
-// "It was a typo": only for an answer one letter off a reading (and not another kana's)
+// "It was a typo" (a reading one letter off, and not another kana's), or "my answer was right" (a meaning)
 function clTypo(i, kind){
   const r = CL?.res[i];
   if (!r || r.ok || r.kind === kind || (kind === 'typo' && !canForgive(CARDS[r.id], r))) return;
@@ -4998,35 +5024,45 @@ function clTypo(i, kind){
   clSave(); render();
 }
 function coldIntroHTML(){
-  const {sc, all, ids, basicN, allN} = clScope(), rec = DB.cold[clKey(sc, all)], best = clBest(rec);
-  const scripts = ['h', 'k'].filter(s => clPool(s, true).length), name = SCRIPT_NAME[sc].toLowerCase();
-  const what = all ? `all ${ids.length} ${name} you’ve learned` : basicN === 46 ? `all 46 basic ${name}` : `the ${basicN} basic ${name} you’ve learned so far (of 46)`;
+  const s = clScope(), rec = DB.cold[s.key], best = clBest(rec), decks = clDecks();
+  let what, opts = '';
+  if (s.deck === 'kana'){
+    const scripts = ['h', 'k'].filter(x => clPool(x, true).length), name = SCRIPT_NAME[s.sc].toLowerCase();
+    what = s.all ? `all ${s.n} ${name} you’ve learned` : s.basicN === 46 ? `all 46 basic ${name}` : `the ${s.basicN} basic ${name} you’ve learned so far (of 46)`;
+    if (scripts.length > 1) opts += `<div class="seg">${scripts.map(x => `<button data-act="cl-script" data-s="${x}" class="${x === s.sc ? 'on' : ''}">${x === 'h' ? 'ひらがな' : 'カタカナ'} ${SCRIPT_NAME[x]}</button>`).join('')}</div>`;
+    if (s.basicN && s.allN > s.basicN) opts += `<div class="seg"><button data-act="cl-set" data-all="0" class="${s.all ? '' : 'on'}">Basic · ${s.basicN}</button><button data-act="cl-set" data-all="1" class="${s.all ? 'on' : ''}">Everything · ${s.allN}</button></div>`;
+  } else {
+    const N = s.pool.length;
+    what = s.n === N ? `all ${N} ${CL_NOUN[s.deck]} you’ve learned` : `a random ${s.n} of the ${N} ${CL_NOUN[s.deck]} you’ve learned`;
+    if (N > CL_SIZES[0]) opts += `<div class="seg">${CL_SIZES.filter(x => x < N).map(x => `<button data-act="cl-size" data-n="${x}" class="${s.n === x ? 'on' : ''}">${x}</button>`).join('')}<button data-act="cl-size" data-n="0" class="${s.n === N ? 'on' : ''}">All · ${N}</button></div>`;
+  }
+  if (decks.length > 1) opts = `<div class="seg">${decks.map(([d, l]) => `<button data-act="cl-deck" data-deck="${d}" class="${d === s.deck ? 'on' : ''}">${l}</button>`).join('')}</div>` + opts;
+  const how = {kana:'type what each one says', w:'type how each one reads', v:'type what each one means', kj:'type what each one means', kw:'type how each one reads, in romaji or kana'}[s.deck];
+  const glyph = s.deck === 'kana' ? (s.sc === 'h' ? 'あ' : 'ア') : {w:'読', v:'語', kj:'漢', kw:'漢'}[s.deck];
   return `<div class="done cl-intro">
-    <span class="hanko" style="width:64px;height:64px;font-size:34px;margin:0 auto;border-radius:14px">${sc === 'h' ? 'あ' : 'ア'}</span>
+    <span class="hanko" style="width:64px;height:64px;font-size:34px;margin:0 auto;border-radius:14px">${glyph}</span>
     <h1>Cold Learn</h1>
-    <p class="rom">Test yourself on ${what}, one at a time in random order. No hints, no sound, no warm-up: type what each one says.</p>
-    ${scripts.length > 1 || (basicN && allN > basicN) ? `<div class="cl-opts">
-      ${scripts.length > 1 ? `<div class="seg">${scripts.map(s => `<button data-act="cl-script" data-s="${s}" class="${s === sc ? 'on' : ''}">${s === 'h' ? 'ひらがな' : 'カタカナ'} ${SCRIPT_NAME[s]}</button>`).join('')}</div>` : ''}
-      ${basicN && allN > basicN ? `<div class="seg"><button data-act="cl-set" data-all="0" class="${all ? '' : 'on'}">Basic · ${basicN}</button><button data-act="cl-set" data-all="1" class="${all ? 'on' : ''}">Everything · ${allN}</button></div>` : ''}
-    </div>` : ''}
+    <p class="rom">Test yourself on ${what}, one at a time in random order. No hints, no sound, no warm-up: ${how}.</p>
+    ${opts ? `<div class="cl-opts">${opts}</div>` : ''}
     <div class="grid" style="grid-template-columns:repeat(3,1fr)">
-      <div class="panel stat"><div class="k">In the test</div><div class="v">${ids.length}</div></div>
+      <div class="panel stat"><div class="k">In the test</div><div class="v">${s.n}</div></div>
       <div class="panel stat"><div class="k">Last time</div><div class="v">${rec ? `${rec.s}<small>/${rec.t}</small>` : '–'}</div>${rec ? `<div class="muted" style="font-size:12px">${fmtClock(rec.secs)}</div>` : ''}</div>
       <div class="panel stat"><div class="k">Best</div><div class="v">${best ? `${best.s}<small>/${best.t}</small>` : '–'}</div>${best ? `<div class="muted" style="font-size:12px">${fmtClock(best.secs)}</div>` : ''}</div>
     </div>
     <div class="hero-row" style="justify-content:center"><button class="btn primary big" data-act="cl-start">Start →</button><button class="btn big ghost" data-act="cl-quit">Back</button></div>
-    <p class="muted" style="font-size:12.5px;margin-top:16px">Your reviews aren’t affected. Kana you mix up go to the lookalike drill.</p>
+    <p class="muted" style="font-size:12.5px;margin-top:16px">Your reviews aren’t affected.${s.deck === 'kana' ? ' Kana you mix up go to the lookalike drill.' : ''}</p>
   </div>`;
 }
-// The results laid out like the kana chart, so a weak row stands out
-function clChartHTML(){
+// Kana results are laid out like the kana chart, so a weak row stands out; other decks in the order they came
+function clResultsHTML(){
+  if (CL.deck !== 'kana') return `<div class="trouble">${CL.res.map(r => `<button class="chip ${clCls(r)}" data-act="detail" data-id="${r.id}" data-tip="${retAnswerOf(CARDS[r.id])} · ${clTipHTML(r)}">${CARDS[r.id].kana}</button>`).join('')}</div>`;
   const byId = new Map(CL.res.map(r => [r.id, r]));
   const idOf = h => `${CL.sc}:${CL.sc === 'h' ? h : toKata(h)}`;
   const cell = h => {
     if (h === KANA_SEP) return '<div class="cell blank"></div>';
     const id = idOf(h), c = CARDS[id], r = byId.get(id);
     if (!r) return `<div class="cell cl-off" data-tip="Not in this test"><span class="kana">${c.kana}</span><span class="r">${c.romaji}</span></div>`;
-    return `<button class="cell ${clCls(r)}" data-act="detail" data-id="${id}" data-tip="${clOk(r) ? `${fmtSecs(r.rt)}${r.slow ? ' · slow' : ''}${r.kind === 'typo' ? ' · typo' : ''}` : `you typed ${r.text ? esc(r.text) : 'nothing'}`}"><span class="kana">${c.kana}</span><span class="r">${c.romaji}</span></button>`;
+    return `<button class="cell ${clCls(r)}" data-act="detail" data-id="${id}" data-tip="${clTipHTML(r)}"><span class="kana">${c.kana}</span><span class="r">${c.romaji}</span></button>`;
   };
   const secs = [['Basic', GRID_BASIC.flatMap(r => [...r]), 'grid5'], ['Dakuten & handakuten', GRID_DAKU.flatMap(r => [...r]), 'grid5'], ['Combinations', ROWS.slice(13).flatMap(r => splitKana(r[2])), 'grid3']]
     .filter(([, ks]) => ks.some(h => h !== KANA_SEP && byId.has(idOf(h))));
@@ -5037,7 +5073,7 @@ function coldDoneHTML(){
   const wrong = CL.res.map((r, i) => [r, i]).filter(([r]) => !r.ok), missed = wrong.filter(([r]) => !clOk(r)).length;
   const slow = CL.res.filter(r => clOk(r) && r.slow).sort((a, b) => b.rt - a.rt);
   const prevBest = clBest(CL.prev), newBest = !!prevBest && clBetter({s:right, t:n, secs:CL.secs}, prevBest);
-  const line = pct === 100 ? 'Every one, cold. That’s the whole set.' : pct >= 80 ? 'Solid. Just a few to tidy up.' : 'These are the ones to work on. Relearn them, then try again tomorrow.';
+  const line = pct === 100 ? `Every one, cold.${CL.full ? ' That’s the whole set.' : ''}` : pct >= 80 ? 'Solid. Just a few to tidy up.' : 'These are the ones to work on. Relearn them, then try again tomorrow.';
   return `<div class="done cl-done">
     <span class="hanko" style="width:64px;height:64px;font-size:30px;margin:0 auto;border-radius:14px">${pct >= 80 ? '良' : '練'}</span>
     <h1>${right} / ${n}</h1>
@@ -5045,13 +5081,13 @@ function coldDoneHTML(){
     <div class="grid">
       <div class="panel stat"><div class="k">Right</div><div class="v">${pct}<small>%</small></div></div>
       <div class="panel stat"><div class="k">Time</div><div class="v">${fmtClock(CL.secs)}</div></div>
-      <div class="panel stat"><div class="k">Per kana</div><div class="v">${fmtSecs(CL.secs / n)}</div></div>
+      <div class="panel stat"><div class="k">Per ${CL_ONE[CL.deck]}</div><div class="v">${fmtSecs(CL.secs / n)}</div></div>
       <div class="panel stat"><div class="k">Last time</div><div class="v">${CL.prev ? `${CL.prev.s}<small>/${CL.prev.t}</small>` : '–'}</div></div>
     </div>
-    <section class="panel"><div class="sec-h"><h2>Your results</h2>${legendColdHTML()}</div>${clChartHTML()}</section>
+    <section class="panel"><div class="sec-h"><h2>Your results</h2>${legendColdHTML()}</div>${clResultsHTML()}</section>
     ${wrong.length ? `<section class="panel"><h2>Wrong answers</h2><div class="cl-wrong">${wrong.map(([r, i]) => { const c = CARDS[r.id]; return `<div class="cl-row"><button class="chip ${clCls(r)}" data-act="detail" data-id="${r.id}">${c.kana}</button>
-      <span><b>${c.romaji}</b> <span class="muted">· you typed ${r.text ? `“${esc(r.text)}”` : 'nothing'}</span></span>${mkChoiceHTML(r.kind, `data-act="cl-typo" data-i="${i}"`, r.hint, '⌨ Typo', canForgive(c, r))}</div>`; }).join('')}</div></section>` : ''}
-    ${slow.length ? `<section class="panel"><h2>Right, but slow</h2><p class="sub">Over your ${DB.settings.speed}-second speed target. Reading at a glance is the goal.</p><div class="trouble">${slow.map(r => `<button class="chip s-young" data-act="detail" data-id="${r.id}" data-tip="${fmtSecs(r.rt)}">${CARDS[r.id].kana}</button>`).join('')}</div></section>` : ''}
+      <span><b>${retAnswerOf(c)}</b> <span class="muted">· you typed ${r.text ? `“${esc(r.text)}”` : 'nothing'}</span></span>${mkChoiceHTML(r.kind, `data-act="cl-typo" data-i="${i}"`, r.hint, forgiveLabel(c), canForgive(c, r))}</div>`; }).join('')}</div></section>` : ''}
+    ${slow.length ? `<section class="panel"><h2>Right, but slow</h2><p class="sub">Slower than your speed target. Knowing it at a glance is the goal.</p><div class="trouble">${slow.map(r => `<button class="chip s-young" data-act="detail" data-id="${r.id}" data-tip="${fmtSecs(r.rt)}">${CARDS[r.id].kana}</button>`).join('')}</div></section>` : ''}
     <div class="hero-row" style="justify-content:center">${missed ? `<button class="btn primary big" data-act="cl-relearn">↺ Relearn the ${missed} missed</button>` : ''}<button class="btn big${missed ? '' : ' primary'}" data-act="cl-start">Test again</button><button class="btn big ghost" data-act="cl-quit">Done</button></div>
   </div>`;
 }
@@ -5060,19 +5096,19 @@ function coldHTML(){
   if (!CL) return '';
   if (CL.phase === 'intro') return coldIntroHTML();
   if (CL.phase === 'done') return coldDoneHTML();
-  const c = CARDS[CL.ids[CL.i]], n = CL.ids.length;
+  const c = CARDS[CL.ids[CL.i]], n = CL.ids.length, mean = asksMeaning(c), kw = c.kind === 'kword';
   return `<div class="study cold">
     <div class="study-top"><button class="icon-btn" data-act="cl-quit" aria-label="Stop the test">${ICON.close}</button>
       <div class="progress"><span id="clBar" style="width:${CL.i / n * 100}%"></span></div>
       <span class="cl-meta"><b id="clCount">${CL.i + 1}</b> / ${n} · <span id="clTime">${fmtClock(Math.floor(clSecs()))}</span></span></div>
     <div class="card-wrap"><div class="face solo">
-      <div class="face-top"><span class="pill">Cold Learn · ${SCRIPT_NAME[CL.sc]}</span><span class="counts" id="clScore">${clScoreHTML()}</span></div>
-      <div id="clKana" class="front-kana kana${c.kana.length > 1 ? ' combo' : ''}" lang="ja">${c.kana}</div>
-      ${askHTML(askFor(c), 'No hints: type the romaji')}
+      <div class="face-top"><span class="pill">Cold Learn · ${clName(CL)}</span><span class="counts" id="clScore">${clScoreHTML()}</span></div>
+      ${clFrontHTML(c)}
+      ${askHTML(askFor(c), `No hints: type the ${mean ? 'meaning' : kw ? 'reading in romaji or kana' : 'romaji'}`)}
     </div></div>
-    <form class="typein" data-form="cold" style="margin-top:20px"><input id="cltyped" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="next" placeholder="Type the romaji…" aria-label="Your answer"><button class="btn primary">Check</button></form>
+    <form class="typein" data-form="cold" style="margin-top:20px"><input id="cltyped" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="next" placeholder="Type the ${mean ? 'meaning' : kw ? 'reading' : 'romaji'}…" aria-label="Your answer"><button class="btn primary">Check</button></form>
     <div class="cl-under"><div id="clLast" class="cl-last">${clLastHTML()}</div><button class="btn ghost sm" data-act="cl-skip">Don’t know</button></div>
-    <div class="cl-sheet" lang="ja" aria-hidden="true">${CL.ids.map((id, i) => clSlotHTML(i)).join('')}</div>
+    <div class="cl-sheet${CL.deck === 'kana' ? '' : ' dots'}" lang="ja" aria-hidden="true">${CL.ids.map((id, i) => clSlotHTML(i)).join('')}</div>
     <div class="keys"><kbd>Enter</kbd> check &nbsp;·&nbsp; <kbd>Enter</kbd> on an empty box: don’t know &nbsp;·&nbsp; <kbd>Esc</kbd> stop</div>
   </div>`;
 }
@@ -5208,7 +5244,7 @@ function chartHTML(){
   return `<div class="page-head">
     <div>${kanaTabsHTML('chart')}<p class="eyebrow">五十音 · Gojūon</p><h1>Kana chart</h1><p class="sub">Every kana and how well you know it. Tap one for its stats and memory aid.</p></div>
     <div class="vhead-act"><div class="seg"><button data-act="chart" data-s="h" class="${chartScript === 'h' ? 'on' : ''}">ひらがな Hiragana</button><button data-act="chart" data-s="k" class="${chartScript === 'k' ? 'on' : ''}">カタカナ Katakana</button></div>
-      <div class="vhead-btns">${fcButtonHTML(`data-act="fc-start" data-scope="${chartScript}"`, practicePool(chartScript).length)}<button class="btn sm" data-act="cold" data-s="${chartScript}" ${clPool(chartScript, true).length ? 'data-tip="Every kana you know, shuffled, with no hints"' : 'disabled data-tip="Learn a few of these first"'}>❄ Cold Learn</button></div></div>
+      <div class="vhead-btns">${fcButtonHTML(`data-act="fc-start" data-scope="${chartScript}"`, practicePool(chartScript).length)}${coldButtonHTML(`data-deck="kana" data-s="${chartScript}"`, clPool(chartScript, true).length)}</div></div>
   </div>
   <p class="chart-tip muted">Young → Mastered takes about 4–5 good reviews over 3–5 weeks. Tap a kana to see how close it is. <button class="linkbtn" data-act="tips">How mastering works</button></p>
   <section class="panel chart-sum">
@@ -5915,7 +5951,9 @@ document.addEventListener('click', e => {
   if (a === 'drill'){ S = null; window.scrollTo(0, 0); startDrill(); }
   if (a === 'drill-pick') drillPick(el.dataset.id);
   if (a === 'drill-next'){ D.i++; D.picked = null; render(); toast('Noted — this pair will come up again in your drills'); }
-  if (a === 'cold') openCold(el.dataset.s);
+  if (a === 'cold') openCold(el.dataset.deck, el.dataset.s);
+  if (a === 'cl-deck'){ clDeck = el.dataset.deck; render(); }
+  if (a === 'cl-size'){ clSize = +el.dataset.n; render(); }
   if (a === 'cl-script'){ clScript = el.dataset.s; render(); }
   if (a === 'cl-set'){ clAll = el.dataset.all === '1'; render(); }
   if (a === 'cl-start') startCold();

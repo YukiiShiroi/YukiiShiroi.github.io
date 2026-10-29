@@ -2,7 +2,7 @@
 // Kanamichi service worker: lets the app open and run offline.
 // Three caches: the app itself (replaced with each version), and audio clips and fonts, which are kept
 // across updates so a new version doesn't throw away every clip you've already listened to.
-const CACHE = 'kanamichi-v50';
+const CACHE = 'kanamichi-v51';
 const AUDIO = 'kanamichi-audio';
 const FONTS = 'kanamichi-fonts';
 const SHELL = ['./', './index.html', './audio/list.js', './data/kanji.js', './data/kanji-n4.js', './data/kanji-n4b.js', './data/kanji-n4c.js', './data/synonyms.js', './data/words-core.js', './data/words-core2.js', './data/grammar.js', './data/grammar-n4.js', './data/grammar-n4b.js', './data/grammar-n4c.js', './data/reader.js', './data/reader-n4.js', './data/reader-more.js', './data/reader-n4c.js', './fonts/fonts.css', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png'];
